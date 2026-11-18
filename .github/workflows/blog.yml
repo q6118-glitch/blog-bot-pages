@@ -1,0 +1,57 @@
+name: blog
+on:
+  schedule:
+    - cron: "17 5,11,17 * * *"
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "post | setup | theme"
+        default: "post"
+        required: true
+      force:
+        description: "1 = ignore daily cap (testing)"
+        default: "0"
+permissions:
+  contents: write
+concurrency: blog
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - run: python blogbot.py ${{ github.event.inputs.command || 'post' }}
+        env:
+          FORCE: ${{ github.event.inputs.force || '0' }}
+          GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GLM_MODEL: ${{ vars.GLM_MODEL }}
+          DRAFT: ${{ vars.DRAFT }}
+          MAX_PER_DAY: ${{ vars.MAX_PER_DAY }}
+          WORDS_MIN: ${{ vars.WORDS_MIN }}
+          WORDS_MAX: ${{ vars.WORDS_MAX }}
+          REVIEW: ${{ vars.REVIEW }}
+          G_CLIENT_ID: ${{ secrets.G_CLIENT_ID }}
+          G_CLIENT_SECRET: ${{ secrets.G_CLIENT_SECRET }}
+          G_REFRESH_TOKEN: ${{ secrets.G_REFRESH_TOKEN }}
+          BLOG_ID_EN: ${{ secrets.BLOG_ID_EN }}
+          BLOG_ID_AR: ${{ secrets.BLOG_ID_AR }}
+          BLOG_URL_EN: ${{ secrets.BLOG_URL_EN }}
+          BLOG_URL_AR: ${{ secrets.BLOG_URL_AR }}
+          CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+      - uses: actions/upload-artifact@v4
+        if: github.event.inputs.command == 'setup' || github.event.inputs.command == 'theme'
+        with:
+          name: themes
+          path: dist/
+      - name: save state
+        run: |
+          git config user.name "blog-bot"
+          git config user.email "blog-bot@users.noreply.github.com"
+          mkdir -p data
+          git add data
+          git diff --cached --quiet || (git commit -m "state" && git pull --rebase && git push)
