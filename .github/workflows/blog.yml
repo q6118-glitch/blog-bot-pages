@@ -1,3 +1,4 @@
+# put this file at .github/workflows/blog.yml
 name: blog
 on:
   schedule:
@@ -17,7 +18,7 @@ concurrency: blog
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -30,11 +31,17 @@ jobs:
           GLM_API_KEY: ${{ secrets.GLM_API_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GLM_MODEL: ${{ vars.GLM_MODEL }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          LLM_PRIMARY: ${{ vars.LLM_PRIMARY }}
           DRAFT: ${{ vars.DRAFT }}
           MAX_PER_DAY: ${{ vars.MAX_PER_DAY }}
           WORDS_MIN: ${{ vars.WORDS_MIN }}
           WORDS_MAX: ${{ vars.WORDS_MAX }}
           REVIEW: ${{ vars.REVIEW }}
+          GROUNDING: ${{ vars.GROUNDING }}
+          TRENDS: ${{ vars.TRENDS }}
+          TREND_SHARE: ${{ vars.TREND_SHARE }}
+          MIN_CONFIDENCE: ${{ vars.MIN_CONFIDENCE }}
           G_CLIENT_ID: ${{ secrets.G_CLIENT_ID }}
           G_CLIENT_SECRET: ${{ secrets.G_CLIENT_SECRET }}
           G_REFRESH_TOKEN: ${{ secrets.G_REFRESH_TOKEN }}
